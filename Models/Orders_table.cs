@@ -12,6 +12,5 @@ namespace HomeworkV3.Models
         public int id { get; set; }
         public int customer_Id { get; set; }
         public int product_Id { get; set; }
-        public int order_Id { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using HomeworkV3.Data;
 using HomeworkV3.Models;
 using HomeworkV3.DTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace HomeworkV3.Controllers
 {
@@ -21,8 +22,14 @@ namespace HomeworkV3.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Customer_table>>> GetCustomers()
+        {
+            return await _context.customer_table.ToListAsync();
+        }
+
         [HttpPost]
-        public async Task<ActionResult<AddCustomer>> Add_Customer(AddCustomer Customer_table)
+        public async Task<ActionResult<AddCustomer>> Add_Customer(Customer_table addCustomer)
         {
             if (!ModelState.IsValid)
             {
@@ -31,29 +38,29 @@ namespace HomeworkV3.Controllers
 
             var customer = new Customer_table()
             {
-                id = Customer_table.id,
-                customer_Id = Customer_table.customer_Id
+                id = addCustomer.id,
+                customer_Id = addCustomer.customer_Id
             };
             await _context.customer_table.AddAsync(customer);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCustomer", new { id = customer.id }, Customer_table);
+            return CreatedAtAction("GetCustomer", new { id = customer.id }, addCustomer);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ListCustomer>> List_Customer(int id)
+        public async Task<ActionResult<AddCustomer>> GetCustomers_ById(int id)
         {
-            var customer = from ListCustomer in _context.customer_table
-            join  in _context.orders_table on ListCustomer.id equals Orders_table.book_id
-
-            if (customer == null)
-            {
+            var orders = _context.orders_table.ToList().Where(x => x.customer_Id == id);
+            var customer_by_id = _context.customer_table.ToList().Find(x => x.id == id);
+            if (customer_by_id == null || orders == null)
                 return NotFound();
-            }
-            else
+            var customerDTO = new AddCustomer
             {
-                
-            }
+                id = id,
+                Customer_Id = customer_by_id.customer_Id,
+                Orders = orders.ToList()
+            };
+            return customerDTO;
         }
     }
 }

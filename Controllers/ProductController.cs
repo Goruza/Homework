@@ -3,6 +3,7 @@ using HomeworkV3.DTO;
 using HomeworkV3.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,23 +22,25 @@ namespace HomeworkV3.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public async Task<ActionResult<AddProduct>> Add_Product(AddProduct Product_table)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Products_table>>> GetProducts()
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            return await _context.products_table.ToListAsync();
+        }
 
-            var product = new Products_table()
-            {
-                id = Product_table.id,
-                products_Id = Product_table.products_Id
-            };
-            await _context.products_table.AddAsync(product);
+        [HttpPost]
+        public async Task<ActionResult<Products_table>> Add_Orders(Products_table addProducts)
+        {
+            await _context.products_table.AddAsync(addProducts);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCustomer", new { id = product.id }, Product_table);
+            return CreatedAtAction("GetProducts", new { id = addProducts.id }, addProducts);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Products_table>> GetProducts_ById(int id)
+        {
+            return _context.products_table.ToList().Find(x => x.id == id);
         }
     }
 
